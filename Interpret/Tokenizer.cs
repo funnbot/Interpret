@@ -1,12 +1,12 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 public class Tokenizer {
 
     InputStream input;
-
     char current;
-
-    string newLine = Environment.NewLine;
 
     public Tokenizer(InputStream input) {
         this.input = input;
@@ -28,7 +28,7 @@ public class Tokenizer {
 
         if (is_int(current)) {
             string num = readwhile(is_int);
-            return Tokens.Int(num);
+            return Int(num);
         }
 
         throw input.error("Invalid Character: " + current + " CharCode: " + (int)current);
@@ -37,7 +37,7 @@ public class Tokenizer {
     string readwhile(Func<char, bool> action) {
         string result = "";
         result += current;
-        while (action(input.peek()) && !input.eof()) {
+        while (action(input.peek()) && !eof()) {
             current = input.next();
             result += current;
         }
@@ -55,55 +55,50 @@ public class Tokenizer {
 
     bool is_cell(char c) => "[]".IndexOf(c) > -1;
     Token cell(char c) {
-        if (c == '[') return Tokens.cell_start;
-        // if (c == ']') 
-        return Tokens.cell_end;
+        return Cell(c);
     }
 
     bool is_operator(char c) => "=+-".IndexOf(c) > -1;
+
     Token op(char c) {
         char nx = input.peek();
-        if (c == '=') return Tokens.equal;
+        string r = c.ToString();
         if (c == '+') {
             if (nx == '+') {
                 input.next();
-                return Tokens.increment;
-            }
-            if (nx == '=') { 
+                r += "+";
+            } else if (nx == '=') {
                 input.next();
-                return Tokens.plus_equals;
+                r += "=";
             }
-            return Tokens.plus;
+        } else if (c == '-') {
+            if (nx == '-') {
+                input.next();
+                r += "-";
+            } else if (nx == '=') {
+                input.next();
+                r += "=";
+            }
         }
-        //if (c == '-') {
-        if (nx == '+') { 
-            input.next();
-            return Tokens.decrement;
-        }
-        if (nx == '=') { 
-            input.next();
-            return Tokens.minus_equals;
-        }
-        return Tokens.minus;
-        //}
+        return Op(r);
     }
 
     bool is_int(char c) => "0123456789".IndexOf(c) > -1;
 
-    // string keywords = "if else while end";
-    string keywordStarts = "iew";
-    string keywordChars = "ifelswhnd";
+    static string keywords = "if else while end";
+    static string[] keywordsSplit = keywords.Split(' ');
+    static char[] keywordLets = keywords.Replace(" ", "").ToCharArray().Distinct().ToArray();
 
-    bool is_kw(char c) => keywordStarts.IndexOf(c) > -1;
+    bool is_kw(char c) => keywords.IndexOf(c) > -1;
     Token keyword(char ch) {
         string kw = readwhile((char c) => {
-            return keywordChars.IndexOf(c) > -1;
+            return Array.IndexOf(keywordLets, c) > -1;
         });
-        if (kw == "if") return Tokens.IF;
-        if (kw == "else") return Tokens.ELSE;
-        if (kw == "while") return Tokens.WHILE;
-        //if (kw == "end")
-        return Tokens.END;
+      
+        if (Array.IndexOf(keywordsSplit, kw) > -1)
+            return Kw(kw);
+
+        throw input.error("Invalid Keyword: " + kw);
     }
 
     bool is_comment(char c) => c == '#';
@@ -113,7 +108,39 @@ public class Tokenizer {
         });
     }
 
-    public bool eof() {
-        return input.eof();
+    public static Token Cell(char i) {
+        return new Token(i.ToString(), TokenType.Cell);
     }
+
+    public static Token Op(string i) {
+        return new Token(i, TokenType.Operator);
+    }
+
+    public static Token Kw(string i) {
+        return new Token(i, TokenType.Keyword);
+    }
+
+    public static Token Int(string i) {
+        return new Token(i, TokenType.Int);
+    }
+
+    public bool eof() => input.eof();
+    public System.Exception error(string msg) => input.error(msg);
+}
+
+public struct Token {
+    public string ch;
+    public TokenType type;
+
+    public Token(string ch, TokenType type) {
+        this.ch = ch;
+        this.type = type;
+    }
+}
+
+public enum TokenType {
+    Cell, // [ ]
+    Operator, // = + - += -= ++ --
+    Keyword, // if else while end
+    Int, // Integer
 }

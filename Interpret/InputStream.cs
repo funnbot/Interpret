@@ -21,12 +21,13 @@ public class InputStream {
             col++;
         }
         pos++;
+        System.Console.Write(ch);
         return ch;
     }
 
     public char peek() => source[pos];
 
-    public bool eof() => pos >= source.Length - 1;
+    public bool eof() => pos + 1 >= source.Length;
 
     public System.Exception error(string msg) {
         return new System.Exception(msg + "(" + line + ":" + col + ")");

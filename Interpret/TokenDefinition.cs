@@ -1,19 +1,15 @@
 ﻿public static class Tokens {
-    public static Token cell_start = new Token("[", TokenType.Cell);
-    public static Token cell_end = new Token("]", TokenType.Cell);
+    public static Token Cell(string i) {
+        return new Token(i, TokenType.Cell);
+    }
 
-    public static Token equal = new Token("=", TokenType.Operator);
-    public static Token plus = new Token("+", TokenType.Operator);
-    public static Token minus = new Token("-", TokenType.Operator);
-    public static Token plus_equals = new Token("+=", TokenType.Operator);
-    public static Token minus_equals = new Token("-=", TokenType.Operator);
-    public static Token increment = new Token("++", TokenType.Operator);
-    public static Token decrement = new Token("--", TokenType.Operator);
+    public static Token Op(string i) {
+        return new Token(i, TokenType.Operator);
+    }
 
-    public static Token IF = new Token("if", TokenType.Keyword);
-    public static Token ELSE = new Token("else", TokenType.Keyword);
-    public static Token WHILE = new Token("while", TokenType.Keyword);
-    public static Token END = new Token("end", TokenType.Keyword);
+    public static Token Kw(string i) {
+        return new Token(i, TokenType.Keyword);
+    }
 
     public static Token Int(string i) {
         return new Token(i, TokenType.Int);
@@ -28,4 +24,11 @@ public struct Token {
         this.ch = ch;
         this.type = type;
     }
+}
+
+public enum TokenType {
+    Cell, // [ ]
+    Operator, // = + - += -= ++ --
+    Keyword, // if else while end
+    Int, // Integer
 }
