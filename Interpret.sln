@@ -1,0 +1,47 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interpret", "Interpret\Interpret.csproj", "{579F0C79-CF8E-443A-B90F-A50CD7FAA102}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+		Test|Any CPU = Test|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{579F0C79-CF8E-443A-B90F-A50CD7FAA102}.Debug|x86.ActiveCfg = Debug|x86
+		{579F0C79-CF8E-443A-B90F-A50CD7FAA102}.Debug|x86.Build.0 = Debug|x86
+		{579F0C79-CF8E-443A-B90F-A50CD7FAA102}.Release|x86.ActiveCfg = Release|x86
+		{579F0C79-CF8E-443A-B90F-A50CD7FAA102}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.DotNetNamingPolicy = $1
+		$1.DirectoryNamespaceAssociation = PrefixedHierarchical
+		$0.TextStylePolicy = $2
+		$2.FileWidth = 80
+		$2.TabsToSpaces = True
+		$2.scope = text/x-csharp
+		$0.CSharpFormattingPolicy = $3
+		$3.NewLinesForBracesInTypes = False
+		$3.NewLinesForBracesInMethods = False
+		$3.NewLinesForBracesInProperties = False
+		$3.NewLinesForBracesInAccessors = False
+		$3.NewLinesForBracesInAnonymousMethods = False
+		$3.NewLinesForBracesInControlBlocks = False
+		$3.NewLinesForBracesInAnonymousTypes = False
+		$3.NewLinesForBracesInObjectCollectionArrayInitializers = False
+		$3.NewLinesForBracesInLambdaExpressionBody = False
+		$3.NewLineForElse = False
+		$3.NewLineForCatch = False
+		$3.NewLineForFinally = False
+		$3.scope = text/x-csharp
+		$0.StandardHeader = $4
+		$0.VersionControlPolicy = $5
+		$0.TextStylePolicy = $6
+		$6.FileWidth = 80
+		$6.TabsToSpaces = True
+		$6.scope = text/plain
+	EndGlobalSection
+EndGlobal
