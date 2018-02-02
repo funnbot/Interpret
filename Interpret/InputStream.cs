@@ -1,35 +1,30 @@
-﻿
+﻿using System;
 
 public class InputStream {
 
-    char[] source;
-    public int pos;
-    public int line = 1;
-    public int col;
+    string source;
+    int pos;
+    int line = 1;
+    int col;
 
-    public InputStream(string rawSource) {
-        source = rawSource.ToCharArray();
+    public InputStream(string source) {
+        this.source = source;
     }
 
-    public char next() {
-        if (eof()) throw error("Ran past end of file");
-        char ch = peek();
-        if (ch == '\n') {
+    public string Next() {
+        string ch = source[pos++].ToString();
+        if (ch == "\n") {
             line++;
             col = 0;
-        } else {
-            col++;
-        }
-        pos++;
-        System.Console.Write(ch);
+        } else col++;
         return ch;
     }
 
-    public char peek() => source[pos];
+    public string Peek() => source[pos].ToString();
 
-    public bool eof() => pos + 1 >= source.Length;
+    public bool Eof() => pos >= source.Length;
 
-    public System.Exception error(string msg) {
-        return new System.Exception(msg + "(" + line + ":" + col + ")");
+    public Exception Error(string msg) {
+        return new Exception(msg + "(" + line + ":" + col + ")");
     }
 }

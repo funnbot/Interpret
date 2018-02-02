@@ -1,146 +1,101 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 
 public class Tokenizer {
 
+    string keywords = "if else while end";
+
     InputStream input;
-    char current;
+    Token current = null;
 
     public Tokenizer(InputStream input) {
         this.input = input;
+        kwLets = keywords.Replace(" ", "").ToCharArray().Distinct().ToArray();
+        kwSplit = keywords.Split(' ');
     }
 
-    public Token next() {
-        current = input.next();
+    bool IsKeyword(string c) => kwLets.Contains(c[0]);
 
-        remove_whitespace();
-        if (is_comment(current)) {
-            skip_comment();
-            current = input.next();
-            remove_whitespace();
+    bool IsDigit(string c) => "0123456789".Contains(c);
+
+    bool IsCell(string c) => "[]".Contains(c);
+
+    bool IsOperator(string c) => "=+-".Contains(c);
+
+    bool IsWhitespace(string c) => $" {(char)10}{(char)13}".Contains(c);
+
+    void SkipComment() {
+        ReadWhile((string c) => c != "\n");
+        input.Next();
+    }
+
+    Token ReadNumber() {
+        string num = ReadWhile(IsDigit);
+        return new Token("num", num);
+    }
+
+    Token ReadOperator() {
+        string op = ReadWhile(IsOperator);
+        return new Token("op", op);
+    }
+
+    string[] kwSplit;
+    char[] kwLets;
+    Token ReadKeyword() {
+        string kw = ReadWhile((string c) => Array.IndexOf(kwLets, c[0]) > -1);
+        if (Array.IndexOf(kwSplit, kw) > -1) return new Token("kw", kw);
+        throw input.Error("Invalid Keyword: " + kw);
+    }
+
+    string ReadWhile(Func<string, bool> action) {
+        string res = "";
+        while (!input.Eof() && action(input.Peek()))
+            res += input.Next();
+        return res;
+    }
+
+    Token ReadNext() {
+        ReadWhile(IsWhitespace);
+        if (input.Eof()) return null;
+
+        string ch = input.Peek();
+        if (ch == "#") {
+            SkipComment();
+            return ReadNext();
         }
-
-        if (is_cell(current)) return cell(current);
-        if (is_operator(current)) return op(current);
-        if (is_kw(current)) return keyword(current);
-
-        if (is_int(current)) {
-            string num = readwhile(is_int);
-            return Int(num);
+        if (IsCell(ch)) {
+            input.Next();
+            return new Token("cell", ch);
         }
+        if (IsDigit(ch)) return ReadNumber();
+        if (IsKeyword(ch)) return ReadKeyword();
+        if (IsOperator(ch)) return ReadOperator();
 
-        throw input.error("Invalid Character: " + current + " CharCode: " + (int)current);
+        throw input.Error("Invalid Character: " + ch);
     }
 
-    string readwhile(Func<char, bool> action) {
-        string result = "";
-        result += current;
-        while (action(input.peek()) && !eof()) {
-            current = input.next();
-            result += current;
-        }
-        return result;
+    public Token Peek() {
+        if (current == null) current = ReadNext();
+        return current;
     }
 
-    void remove_whitespace() {
-        if (whitespace(current)) {
-            readwhile(whitespace);
-            current = input.next();
-        }
+    public Token Next() {
+        Token tok = current;
+        current = null;
+        if (tok == null) return ReadNext();
+        return tok;
     }
 
-    bool whitespace(char c) => (" " + (char)10 + (char)13).IndexOf(c) > -1;
-
-    bool is_cell(char c) => "[]".IndexOf(c) > -1;
-    Token cell(char c) {
-        return Cell(c);
-    }
-
-    bool is_operator(char c) => "=+-".IndexOf(c) > -1;
-
-    Token op(char c) {
-        char nx = input.peek();
-        string r = c.ToString();
-        if (c == '+') {
-            if (nx == '+') {
-                input.next();
-                r += "+";
-            } else if (nx == '=') {
-                input.next();
-                r += "=";
-            }
-        } else if (c == '-') {
-            if (nx == '-') {
-                input.next();
-                r += "-";
-            } else if (nx == '=') {
-                input.next();
-                r += "=";
-            }
-        }
-        return Op(r);
-    }
-
-    bool is_int(char c) => "0123456789".IndexOf(c) > -1;
-
-    static string keywords = "if else while end";
-    static string[] keywordsSplit = keywords.Split(' ');
-    static char[] keywordLets = keywords.Replace(" ", "").ToCharArray().Distinct().ToArray();
-
-    bool is_kw(char c) => keywords.IndexOf(c) > -1;
-    Token keyword(char ch) {
-        string kw = readwhile((char c) => {
-            return Array.IndexOf(keywordLets, c) > -1;
-        });
-      
-        if (Array.IndexOf(keywordsSplit, kw) > -1)
-            return Kw(kw);
-
-        throw input.error("Invalid Keyword: " + kw);
-    }
-
-    bool is_comment(char c) => c == '#';
-    void skip_comment() {
-        readwhile((char c) => {
-            return c != (char)10;
-        });
-    }
-
-    public static Token Cell(char i) {
-        return new Token(i.ToString(), TokenType.Cell);
-    }
-
-    public static Token Op(string i) {
-        return new Token(i, TokenType.Operator);
-    }
-
-    public static Token Kw(string i) {
-        return new Token(i, TokenType.Keyword);
-    }
-
-    public static Token Int(string i) {
-        return new Token(i, TokenType.Int);
-    }
-
-    public bool eof() => input.eof();
-    public System.Exception error(string msg) => input.error(msg);
+    public bool Eof() => Peek() == null;
+    public Exception Error(string msg) => input.Error(msg);
 }
 
-public struct Token {
-    public string ch;
-    public TokenType type;
+public class Token {
+    public string type;
+    public string val;
 
-    public Token(string ch, TokenType type) {
-        this.ch = ch;
+    public Token(string type, string val) {
         this.type = type;
+        this.val = val;
     }
-}
-
-public enum TokenType {
-    Cell, // [ ]
-    Operator, // = + - += -= ++ --
-    Keyword, // if else while end
-    Int, // Integer
 }

@@ -1,8 +1,12 @@
 ﻿using System.IO;
 using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Reflection;
+using System.Linq;
 
 namespace Interpret {
-    
+
     class MainClass {
         public static void Main(string[] args) {
 
@@ -15,10 +19,30 @@ namespace Interpret {
 
             InputStream inputStream = new InputStream(source);
             Tokenizer tokenizer = new Tokenizer(inputStream);
-            while (!tokenizer.eof()) {
-                Token token = tokenizer.next();
-                Console.WriteLine("Key " + token.ch + " Type: " + token.type);
+            Parser parser = new Parser(tokenizer);
+            List<Prog> parsed = parser.Parse();
+            Console.Write(GetLogFor(parsed[0]));
+        }
+
+        public static string GetLogFor(object target) {
+            var properties =
+                from property in target.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                select new {
+                    Name = property.Name,
+                    Value = property.GetValue(target, null)
+                };
+
+            var builder = new StringBuilder();
+
+            foreach (var property in properties) {
+                builder
+                    .Append(property.Name)
+                    .Append(" = ")
+                    .Append(property.Value)
+                    .AppendLine();
             }
+
+            return builder.ToString();
         }
     }
 
